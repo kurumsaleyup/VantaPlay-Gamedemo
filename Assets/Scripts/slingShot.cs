@@ -12,11 +12,12 @@ public class slingShot : MonoBehaviour
     private const float MAX_Y = 2.5f, MINGAP_X = 2f;
 
 
-    private Vector3 playerVelocity;
+    private Vector3 playerVelocity, basePosition;
     private float gravityValue = -9.81f;
     private bool groundedPlayer, jump, fly;
     private float deltaY, deltaX, slingPower; //for force calculations.
     private CharacterController controller;
+
 
 
     private void Start()
@@ -24,7 +25,9 @@ public class slingShot : MonoBehaviour
         mcScript = GetComponent<moveCubes>();
         ik = GetComponent<FullBodyBipedIK>();
         initialChestPosition = mcScript.GetChestPointerPosition();
-        controller = gameObject.GetComponent<CharacterController>();
+        controller = GetComponent<CharacterController>();
+        basePosition = new Vector3(0.18f, 1.7f, 0f);
+        gameObject.transform.position = basePosition;
 
     }//end start
     private void Update()
@@ -39,26 +42,32 @@ public class slingShot : MonoBehaviour
         {
             if (0.35f < deltaY && deltaX > MINGAP_X)
             {
-                //Debug.Log("fly");
-                freeIKPositions();
+                //Debug.Log("fly");               
+                //setIKPositions();
                 fly = true;
+
+                if (groundedPlayer && fly && jump)
+                {
+                    gravityValue = -9.81f;
+                    slingPower = Mathf.Abs(deltaX) + Mathf.Abs(deltaY);
+                    playerVelocity.y += Mathf.Sqrt(slingPower * -2f * gravityValue);
+                    jump = false;
+                    fly = false;
+                    freeIKPositions();
+                }
 
             }
         }
-
-        groundedPlayer = controller.isGrounded;
-        if (groundedPlayer && playerVelocity.y < 0)
+        if (playerVelocity.y <= 0 && 0.3f > Vector3.Distance(gameObject.transform.position, basePosition))
         {
+            //Debug.Log("0'lamaya girdim");
+            groundedPlayer = true;
             playerVelocity.y = 0f;
+            gravityValue = 0f;
             setIKPositions();
         }
-        if (jump && groundedPlayer && fly)
-        {
-            slingPower = Mathf.Abs(deltaX) + Mathf.Abs(deltaY);
-            playerVelocity.y += Mathf.Sqrt(slingPower * -2f * gravityValue);
-            jump = false;
-            fly = false;
-        }
+
+
         playerVelocity.y += gravityValue * Time.deltaTime;
         controller.Move(playerVelocity * Time.deltaTime);
 
@@ -88,6 +97,14 @@ public class slingShot : MonoBehaviour
     void setIKPositions()
     {
         ik.solver.IKPositionWeight = 1f;
-        chestPointer.position = mcScript.GetResetPointerPosition();
+
+        if (slingJoystick.Direction.y < 0)
+        {
+            chestPointer.position = chestPointer.position;
+        }
+        else
+        {
+            chestPointer.position = mcScript.GetResetPointerPosition();
+        }
     }
 }//end class
