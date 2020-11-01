@@ -26,7 +26,7 @@ public class slingShot : MonoBehaviour
         ik = GetComponent<FullBodyBipedIK>();
         initialChestPosition = mcScript.GetChestPointerPosition();
         controller = GetComponent<CharacterController>();
-        basePosition = new Vector3(0.18f, 1.7f, 0f);
+        basePosition = new Vector3(0.18f, 1.7f, 0f);//somehow it takes 0,0,0 therefore presetted like that.
         gameObject.transform.position = basePosition;
 
     }//end start
@@ -51,8 +51,9 @@ public class slingShot : MonoBehaviour
                     gravityValue = -9.81f;
                     slingPower = Mathf.Abs(deltaX) + Mathf.Abs(deltaY);
                     playerVelocity.y += Mathf.Sqrt(slingPower * -2f * gravityValue);
-                    jump = false;
-                    fly = false;
+                    jump = false;//able to jump
+                    fly = false;//able to fly
+                    groundedPlayer = false;//is ground
                     freeIKPositions();
                 }
 
@@ -68,8 +69,8 @@ public class slingShot : MonoBehaviour
         }
 
 
-        playerVelocity.y += gravityValue * Time.deltaTime;
-        controller.Move(playerVelocity * Time.deltaTime);
+        playerVelocity.y += gravityValue * Time.deltaTime;//movement
+        controller.Move(playerVelocity * Time.deltaTime);//movement
 
     }//end update
 
@@ -79,7 +80,7 @@ public class slingShot : MonoBehaviour
         {
             if (slingJoystick.Direction.y < 0)
             {
-                if (deltaY < MAX_Y)
+                if (deltaY < MAX_Y)//limitting movement
                 {
                     chestPointer.position += Vector3.down * Time.deltaTime;
                     jump = true;
@@ -98,11 +99,11 @@ public class slingShot : MonoBehaviour
     {
         ik.solver.IKPositionWeight = 1f;
 
-        if (slingJoystick.Direction.y < 0)
+        if (slingJoystick.Direction.y < 0)//bending the model on y axis.
         {
             chestPointer.position = chestPointer.position;
         }
-        else
+        else //resetting the bend on y axis.
         {
             chestPointer.position = mcScript.GetResetPointerPosition();
         }
